@@ -68,9 +68,9 @@ y_true_lr =  d_test.sentiment
 predict_lr = predict_lr1
 acc_lr = accuracy_score(y_true_lr, predict_lr[:, 1] > 0.5)
 #print(predict[:,1])
-print("2-gram RF准确率为 = %f" % acc_lr)
+print("2-gram LR准确率为 = %f" % acc_lr)
 auc_lr = roc_auc_score(y_true_lr, predict_lr[:, 1])
-print("2-gram RFauc=%f"%auc_lr)
+print("2-gram LRauc=%f"%auc_lr)
 
 
 test_predicted_lr = np.array(predict_lr[:, 1]>0.5)
