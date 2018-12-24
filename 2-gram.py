@@ -34,41 +34,49 @@ words = vectorizer.get_feature_names()[i:i+10]
 #print(words)
 #print(features[:3 , i:i+10].todense())
  
-#NBmodel = MultinomialNB()
-#NBmodel.fit(features , d_train.sentiment) #训练模型
-#predict1 = NBmodel.predict_proba(test_features) #返回在每一类对应的概率
-#predict2=NBmodel.predict_proba(test_real_features) #返回在每一类对应的概率
+NBmodel = MultinomialNB()
+NBmodel.fit(features , d_train.sentiment) #训练模型
+predict_nb1 = NBmodel.predict_proba(test_features) #返回在每一类对应的概率
+predict_nb2=NBmodel.predict_proba(test_real_features) #返回在每一类对应的概率
 
-#y_true =  d_test.sentiment
-#predict = predict1
-#acc = accuracy_score(y_true, predict[:, 1] > 0.5)
-#print("NB准确率为 = %f" % acc)
-#auc = roc_auc_score(y_true, predict[:, 1])
-#print("NBauc=%f"%auc)
+y_true_nb =  d_test.sentiment
+predict_nb = predict_nb1
+acc_nb = accuracy_score(y_true_nb, predict_nb[:, 1] > 0.5)
+print("2-gram NB准确率为 = %f" % acc_nb)
+auc_nb = roc_auc_score(y_true_nb, predict_nb[:, 1])
+print("2-gram NB auc=%f"%auc_nb)
+
+test_predicted_nb = np.array(predict_nb2[:, 1]>0.5)
+a=test_predicted_nb+0;
+nb_output = pd.DataFrame(data=a, columns=['sentiment'])
+nb_output['id'] = test['id']
+nb_output = nb_output[['id', 'sentiment']]
+nb_output.to_csv("~/Documents/sentiment/movie_sentiment/result/2-gram-nb-submission.csv", index=False)
+
+
+
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression as LR
 LGmodel =LR()
 LGmodel.fit(features , d_train.sentiment) #训练模型
-predict1 = LGmodel.predict_proba(test_features) #返回在每一类对应的概率
-predict2=LGmodel.predict_proba(test_real_features) #返回在每一类对应的概率
+predict_lr1 = LGmodel.predict_proba(test_features) #返回在每一类对应的概率
+predict_lr2=LGmodel.predict_proba(test_real_features) #返回在每一类对应的概率
 #print(predict1)
 # performance(d_test.sentiment , predict1)
-y_true =  d_test.sentiment
-predict = predict1
-acc = accuracy_score(y_true, predict[:, 1] > 0.5)
+y_true_lr =  d_test.sentiment
+predict_lr = predict_lr1
+acc_lr = accuracy_score(y_true_lr, predict_lr[:, 1] > 0.5)
 #print(predict[:,1])
-print("2-gram RF准确率为 = %f" % acc)
-auc = roc_auc_score(y_true, predict[:, 1])
-print("2-gram auc=%f"%auc)
+print("2-gram RF准确率为 = %f" % acc_lr)
+auc_lr = roc_auc_score(y_true_lr, predict_lr[:, 1])
+print("2-gram RFauc=%f"%auc_lr)
 
 
-
-test_predicted = np.array(predict2[:, 1]>0.5)
-a=test_predicted+0;
+test_predicted_lr = np.array(predict_lr[:, 1]>0.5)
+a=test_predicted_lr+0;
 lr_output = pd.DataFrame(data=a, columns=['sentiment'])
 lr_output['id'] = test['id']
 lr_output = lr_output[['id', 'sentiment']]
-lr_output.to_csv("~/Documents/sentiment/movie_sentiment/result/2-gram-submission.csv", index=False)
-
-
+lr_output.to_csv("~/Documents/sentiment/movie_sentiment/result/2-gram-lr-submission.csv", index=False)
 
