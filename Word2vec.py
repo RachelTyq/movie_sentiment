@@ -3,20 +3,32 @@ import pandas as pd
 import numpy as np
 import re
 from bs4 import BeautifulSoup
+from nltk.corpus import wordnet
+stopwords=['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', "she's", 'her', 'hers', 'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 'can', 'will', 'just', 'don', "don't", 'should', "should've", 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', ]
 
-def review_to_wordlist(review):
-    '''
-    把IMDB的评论转成词序列
-    参考：http://blog.csdn.net/longxinchen_ml/article/details/50629613
-    '''
-    # 去掉HTML标签，拿到内容
-    review_text = BeautifulSoup(review, "html.parser").get_text()
-    # 用正则表达式取出符合规范的部分
-    review_text = re.sub("[^a-zA-Z]"," ", review_text)
-    # 小写化所有的词，并转成词list
-    words = review_text.lower().split()
-    # 返回words
-    return words
+def review_to_words( raw_review ):
+    # Function to convert a raw review to a string of words
+    # The input is a single string (a raw movie review), and 
+    # the output is a single string (a preprocessed movie review)
+    #
+    # 1. Remove HTML
+    review_text = BeautifulSoup(raw_review).get_text() 
+    #
+    # 2. Remove non-letters        
+    letters_only = re.sub("[^a-zA-Z]", " ", review_text) 
+    #
+    # 3. Convert to lower case, split into individual words
+    words = letters_only.lower().split()                             
+    #
+    # 4. In Python, searching a set is much faster than searching
+    #   a list, so convert the stop words to a set
+
+    # 5. Remove stop words
+    meaningful_words = [w for w in words if not w in stopwords]   
+    #
+    # 6. Join the words back into one string separated by space, 
+    # and return the result.
+    return( " ".join( meaningful_words ))   
 
 train = pd.read_csv('labeledTrainData.tsv', header=0, delimiter="\t", quoting=3)
 test = pd.read_csv('testData.tsv', header=0, delimiter="\t", quoting=3)
@@ -27,14 +39,15 @@ test = pd.read_csv('testData.tsv', header=0, delimiter="\t", quoting=3)
 label = train['sentiment']
 train_data = []
 for i in range(len(train['review'])):
-    train_data.append(' '.join(review_to_wordlist(train['review'][i])))
+    train_data.append(''.join(review_to_words(train['review'][i])))
 test_data = []
 for i in range(len(test['review'])):
-    test_data.append(' '.join(review_to_wordlist(test['review'][i])))
+    test_data.append(''.join(review_to_words(test['review'][i])))
 
 # 预览数据
 #print (train_data[0], '\n')
 #print( test_data[0])
+
 
 
 
@@ -152,6 +165,7 @@ def getAvgFeatureVecs(reviews, model, num_features):
     return reviewFeatureVecs
 
 trainDataVecs = getAvgFeatureVecs(train_data, model, num_features)
+print(trainDataVecs)
 testDataVecs = getAvgFeatureVecs(test_data, model, num_features)
 
 #高斯贝叶斯+Word2vec训练
